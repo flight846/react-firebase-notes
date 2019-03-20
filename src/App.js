@@ -1,13 +1,39 @@
 import React, { Component } from 'react';
 import './App.css';
 import Note from './Note/Note';
+import NoteForm from './NoteForm/NoteForm';
+import { DB_CONFIG } from './Config/config';
+import 'firebase/database';
+import firebase from 'firebase/app';
 
 class App extends Component {
+    constructor(props) {
+        super(props)
+        this.app = !firebase.apps.length ? firebase.initializeApp(DB_CONFIG) : firebase.app();
+        this.db = this.app.database().ref.child('notes'); // <-- create a notes object in db
+    }
+
+    componentWillMount() {
+        const prevNotes = this.state.notes;
+        this.db.on('child_added', snap => {
+            prevNotes.push({
+                id: snap.key,
+                noteContent: snap.val().noteContent
+            })
+            this.setState({
+                notes: prevNotes
+            })
+        })
+    }
+
     state = {
-        notes: [
-            {id: 1, noteContent: 'Note 1 here'},
-            {id: 2, noteContent: 'Note 2 here'}
-        ]
+        notes: []
+    }
+
+    addNote = (note) => {
+        this.database.push().set({
+            noteContent: note
+        })
     }
 
     render() {
@@ -18,19 +44,21 @@ class App extends Component {
                 </div>
                 <div className="notesBody">
                    {
-                        this.state.notes.map((note) => {
-                            return (
-                                <Note
-                                    noteContent={note.noteContent}
-                                    noteId={note.noteId}
-                                    key={note.id} 
-                                />
-                            )
-                        })
+                        this.state.notes.length < 1 ? <p>Please add a note</p> : (
+                            this.state.notes.map((note) => {
+                                return (
+                                    <Note
+                                        noteContent={note.noteContent}
+                                        noteId={note.noteId}
+                                        key={note.id}
+                                    />
+                                )
+                            })
+                        )
                    }
                 </div>
                 <div className="notesFooter">
-                    Footer will go here...
+                    <NoteForm addNote={ this.addNote }/>
                 </div>
             </div>
         );
