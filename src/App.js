@@ -3,14 +3,14 @@ import './App.css';
 import Note from './Note/Note';
 import NoteForm from './NoteForm/NoteForm';
 import { DB_CONFIG } from './Config/config';
-import 'firebase/database';
 import firebase from 'firebase/app';
+import 'firebase/database';
 
 class App extends Component {
     constructor(props) {
         super(props)
         this.app = !firebase.apps.length ? firebase.initializeApp(DB_CONFIG) : firebase.app();
-        this.db = this.app.database().ref.child('notes'); // <-- create a notes object in db
+        this.db = this.app.database().ref().child('notes'); // <-- create a notes object in db
     }
 
     componentWillMount() {
@@ -31,7 +31,7 @@ class App extends Component {
     }
 
     addNote = (note) => {
-        this.database.push().set({
+        this.db.push().set({
             noteContent: note
         })
     }
