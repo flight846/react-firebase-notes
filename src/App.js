@@ -24,6 +24,17 @@ class App extends Component {
                 notes: prevNotes
             })
         })
+
+        this.db.on('child_removed', snap => {
+            for(let i = 0; i < prevNotes.length; i++) {
+                if (prevNotes[i].id === snap.key) {
+                    prevNotes.splice(i, 1);
+                }
+            }
+            this.setState({
+                notes: prevNotes
+            })
+        })
     }
 
     state = {
@@ -34,6 +45,10 @@ class App extends Component {
         this.db.push().set({
             noteContent: note
         })
+    }
+
+    removeNote = id => {
+        this.db.child(id).remove();
     }
 
     render() {
@@ -49,8 +64,9 @@ class App extends Component {
                                 return (
                                     <Note
                                         noteContent={note.noteContent}
-                                        noteId={note.noteId}
+                                        noteId={note.id}
                                         key={note.id}
+                                        removeNote={this.removeNote}
                                     />
                                 )
                             })
